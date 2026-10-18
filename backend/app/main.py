@@ -34,8 +34,9 @@ app = FastAPI(
     description="Secure Healthcare Patient Portal API - Milestone 2 Authentication & Persistent Database",
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
-    redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None
+    docs_url="/api/docs" if settings.ENVIRONMENT != "production" else None,
+    redoc_url="/api/redoc" if settings.ENVIRONMENT != "production" else None,
+    openapi_url="/api/openapi.json" if settings.ENVIRONMENT != "production" else None
 )
 
 # Security Headers Middleware
@@ -91,6 +92,7 @@ async def generic_exception_handler(request: Request, exc: Exception):
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 
 @app.get("/health", tags=["System"])
+@app.get("/api/health", tags=["System"])
 @app.get(f"{settings.API_V1_STR}/health", tags=["System"])
 def health_check():
     """Lightweight health check endpoint for monitoring."""
