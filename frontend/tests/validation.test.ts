@@ -102,7 +102,7 @@ describe("Client-side Registration Schema Validation", () => {
   });
 
   test("allows optional medical condition to be omitted", () => {
-    const { medical_condition, ...withoutMedical } = validData;
+    const withoutMedical = { ...validData, medical_condition: undefined };
     const result = registerSchema.safeParse(withoutMedical);
     assert.strictEqual(result.success, true);
   });

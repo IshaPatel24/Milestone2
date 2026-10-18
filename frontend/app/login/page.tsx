@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -20,8 +20,19 @@ function LoginForm() {
   const searchParams = useSearchParams();
 
   const [serverError, setServerError] = useState<string | null>(null);
-  const [infoBanner, setInfoBanner] = useState<string | null>(null);
+  const [dismissedBanner, setDismissedBanner] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
+
+  const registered = searchParams.get("registered") === "1";
+  const loggedOut = searchParams.get("logged_out") === "1";
+
+  const infoBanner = !dismissedBanner
+    ? registered
+      ? "Registration completed successfully! Please sign in with your credentials."
+      : loggedOut
+      ? "You have been safely signed out of your patient portal session."
+      : null
+    : null;
 
   const {
     register,
@@ -37,14 +48,6 @@ function LoginForm() {
       remember_me: false,
     },
   });
-
-  useEffect(() => {
-    if (searchParams.get("registered") === "1") {
-      setInfoBanner("Registration completed successfully! Please sign in with your credentials.");
-    } else if (searchParams.get("logged_out") === "1") {
-      setInfoBanner("You have been safely signed out of your patient portal session.");
-    }
-  }, [searchParams]);
 
   const onSubmit = async (data: LoginSchema) => {
     setServerError(null);
@@ -88,7 +91,7 @@ function LoginForm() {
       {/* Info / Notification Banners */}
       {infoBanner && (
         <div className="mb-5">
-          <Alert variant="success" onClose={() => setInfoBanner(null)}>
+          <Alert variant="success" onClose={() => setDismissedBanner(true)}>
             {infoBanner}
           </Alert>
         </div>

@@ -12,7 +12,6 @@ import {
   Mail,
   HeartPulse,
   Languages,
-  CheckCircle2,
   FileText,
   ArrowRight,
 } from "lucide-react";
