@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator, ConfigDict
-from backend.app.models.patient import GenderEnum
+from app.models.patient import GenderEnum
 
 PASSWORD_REGEX = re.compile(
     r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=\[\]{}|;:,.<>])[A-Za-z\d@$!%*?&#^()_\-+=\[\]{}|;:,.<>]{8,128}$"

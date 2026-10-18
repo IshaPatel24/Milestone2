@@ -4,14 +4,16 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
-# Ensure workspace root is in sys.path
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-if str(BASE_DIR) not in sys.path:
-    sys.path.insert(0, str(BASE_DIR))
+# Ensure both backend/ and the repository root are in sys.path
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+if str(BACKEND_DIR.parent) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR.parent))
 
-from backend.app.core.config import settings
-from backend.app.db.base import Base
-import backend.app.models.patient  # Ensure Patient model is registered
+from app.core.config import settings
+from app.db.base import Base
+import app.models.patient  # Ensure Patient model is registered
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -21,7 +23,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Set database URL dynamically from app settings
+# Set database URL dynamically from app settings (supporting Neon PostgreSQL and SQLite)
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 target_metadata = Base.metadata
@@ -34,7 +36,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        render_as_batch=True  # Batch mode for SQLite schema changes
+        render_as_batch=True  # Batch mode for SQLite & PostgreSQL schema safety
     )
 
     with context.begin_transaction():
@@ -44,7 +46,7 @@ def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     configuration = config.get_section(config.config_ini_section, {})
     configuration["sqlalchemy.url"] = settings.DATABASE_URL
-    
+
     connect_args = {}
     if settings.DATABASE_URL.startswith("sqlite"):
         connect_args["check_same_thread"] = False

@@ -1,15 +1,22 @@
 import os
+import sys
 import tempfile
+from pathlib import Path
 import pytest
 from typing import Generator
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from backend.app.main import app
-from backend.app.api.deps import get_db
-from backend.app.db.base import Base
-from backend.app.models.patient import Patient
+# Ensure backend root directory is in sys.path
+backend_dir = Path(__file__).resolve().parent.parent
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
+
+from app.main import app
+from app.api.deps import get_db
+from app.db.base import Base
+from app.models.patient import Patient
 
 @pytest.fixture(scope="session")
 def test_db_path():

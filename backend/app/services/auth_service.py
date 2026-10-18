@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 
-from backend.app.models.patient import Patient
-from backend.app.schemas.patient import PatientCreate, PatientLogin
-from backend.app.core.security import hash_password, verify_password
+from app.models.patient import Patient
+from app.schemas.patient import PatientCreate, PatientLogin
+from app.core.security import hash_password, verify_password
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,6 @@ class AuthService:
         normalized_email = login_data.email.strip().lower()
         patient = cls.get_by_email(db, normalized_email)
 
-        # Generic error message to prevent account enumeration
         generic_error = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email address or password.",
@@ -92,8 +91,6 @@ class AuthService:
         )
 
         if not patient:
-            # Constant-time dummy verify can prevent timing attacks if desired,
-            # but Argon2id on empty hash can also be evaluated.
             logger.info("Authentication failed: user not found")
             raise generic_error
 

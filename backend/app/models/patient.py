@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, Index
-from backend.app.db.base import Base
+from app.db.base import Base
 
 def get_utc_now():
     return datetime.now(timezone.utc)

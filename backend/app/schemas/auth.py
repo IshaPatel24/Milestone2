@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
-from backend.app.schemas.patient import PatientPublic
+from app.schemas.patient import PatientPublic
 
 class TokenResponse(BaseModel):
     access_token: str

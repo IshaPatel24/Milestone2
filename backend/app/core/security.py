@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Union
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError, VerificationError, InvalidHash
 from jose import JWTError, jwt
-from backend.app.core.config import settings
+from app.core.config import settings
 
 # Initialize Argon2id hasher with secure parameters
 ph = PasswordHasher(

@@ -2,14 +2,14 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
-from backend.app.core.config import settings
-from backend.app.core.security import create_access_token
-from backend.app.db.session import get_db_session
-from backend.app.api.deps import get_db, get_current_patient
-from backend.app.models.patient import Patient
-from backend.app.schemas.patient import PatientCreate, PatientLogin, PatientPublic
-from backend.app.schemas.auth import TokenResponse, MessageResponse
-from backend.app.services.auth_service import AuthService
+from app.core.config import settings
+from app.core.security import create_access_token
+from app.db.session import get_db_session
+from app.api.deps import get_db, get_current_patient
+from app.models.patient import Patient
+from app.schemas.patient import PatientCreate, PatientLogin, PatientPublic
+from app.schemas.auth import TokenResponse, MessageResponse
+from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -58,13 +58,16 @@ def login(
     )
 
     # Set secure HttpOnly cookie for browser-based authentication
+    # Note: If SameSite is 'none', browser mandates secure=True
+    is_secure = settings.SECURE_COOKIES or (settings.COOKIE_SAMESITE.lower() == "none")
+
     response.set_cookie(
         key=settings.AUTH_COOKIE_NAME,
         value=access_token,
         max_age=expires_seconds,
         expires=expires_seconds,
         httponly=True,
-        secure=settings.SECURE_COOKIES,
+        secure=is_secure,
         samesite=settings.COOKIE_SAMESITE,
         path="/"
     )
@@ -98,11 +101,13 @@ def get_current_user_profile(
 )
 def logout(response: Response) -> MessageResponse:
     """Clears the authentication cookie and ends session."""
+    is_secure = settings.SECURE_COOKIES or (settings.COOKIE_SAMESITE.lower() == "none")
+
     response.delete_cookie(
         key=settings.AUTH_COOKIE_NAME,
         path="/",
         httponly=True,
-        secure=settings.SECURE_COOKIES,
+        secure=is_secure,
         samesite=settings.COOKIE_SAMESITE
     )
     return MessageResponse(message="Successfully logged out of patient portal.")

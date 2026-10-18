@@ -6,10 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from backend.app.core.config import settings
-from backend.app.api.v1 import auth
-from backend.app.db.base import Base
-from backend.app.db.session import engine
+from app.core.config import settings
+from app.api.v1 import auth
+from app.db.base import Base
+from app.db.session import engine
 
 # Configure logging
 logging.basicConfig(
@@ -20,9 +20,12 @@ logger = logging.getLogger("patient_portal")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure database tables exist (migrations are also provided via Alembic)
-    Base.metadata.create_all(bind=engine)
-    logger.info("Application starting up, SQLite database initialized.")
+    # Only auto-create tables for local SQLite development
+    if settings.DATABASE_URL.startswith("sqlite"):
+        Base.metadata.create_all(bind=engine)
+        logger.info("Local SQLite database initialized.")
+    else:
+        logger.info("Connected to PostgreSQL database. Schema management is handled via Alembic migrations.")
     yield
     logger.info("Application shutting down.")
 
@@ -48,10 +51,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(SecurityHeadersMiddleware)
 
-# CORS Middleware
+# CORS Middleware with preview regex support
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origin_regex=settings.CORS_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -66,7 +70,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         field = " -> ".join(str(loc) for loc in error.get("loc", []))
         message = error.get("msg")
         errors.append({"field": field, "message": message})
-    
+
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
@@ -89,9 +93,11 @@ app.include_router(auth.router, prefix=settings.API_V1_STR)
 @app.get("/health", tags=["System"])
 @app.get(f"{settings.API_V1_STR}/health", tags=["System"])
 def health_check():
-    """Health check endpoint for monitoring."""
+    """Lightweight health check endpoint for monitoring."""
+    db_type = "sqlite" if settings.DATABASE_URL.startswith("sqlite") else "postgresql"
     return {
         "status": "healthy",
         "service": settings.APP_NAME,
-        "environment": settings.ENVIRONMENT
+        "environment": settings.ENVIRONMENT,
+        "database": db_type
     }

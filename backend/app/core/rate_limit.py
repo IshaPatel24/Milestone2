@@ -2,7 +2,7 @@ import time
 from collections import defaultdict
 from typing import Dict, List, Tuple
 from fastapi import Request, HTTPException, status
-from backend.app.core.config import settings
+from app.core.config import settings
 
 class InMemoryRateLimiter:
     """
@@ -31,7 +31,7 @@ auth_rate_limiter = InMemoryRateLimiter(requests_per_minute=settings.AUTH_RATE_L
 
 async def check_auth_rate_limit(request: Request):
     """Dependency to apply rate limiting on authentication routes."""
-    # Obtain client IP, respecting X-Forwarded-For if behind a proxy
+    # Obtain client IP, respecting X-Forwarded-For if behind a proxy / Vercel
     client_ip = request.headers.get("x-forwarded-for")
     if client_ip:
         client_ip = client_ip.split(",")[0].strip()

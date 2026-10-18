@@ -2,9 +2,9 @@ import pytest
 from fastapi import status
 from sqlalchemy.orm import Session
 
-from backend.app.models.patient import Patient
-from backend.app.core.security import verify_password
-from backend.app.core.config import settings
+from app.models.patient import Patient
+from app.core.security import verify_password
+from app.core.config import settings
 
 VALID_REGISTRATION_DATA = {
     "first_name": "Jane",
@@ -191,7 +191,6 @@ def test_logout_and_session_invalidation(client):
     assert "logged out" in logout_res.json()["message"].lower()
 
     # Verify cookie was cleared
-    # In FastAPI/Starlette, deleting cookie sets its value to "" and expires in the past
     cookie_val = client.cookies.get(settings.AUTH_COOKIE_NAME)
     assert cookie_val is None or cookie_val == ""
 
